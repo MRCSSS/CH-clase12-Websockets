@@ -1,10 +1,19 @@
-const socket = io.connect();
+/* ---------------------------- MODULOS -----------------------------*/
+const socket = io();
+
+/* ---------------------------- WEBSOCKET ---------------------------*/
 
 socket.on('from-server-messages', data => {
-    render(data.DB_MESSAGES);
+    renderChat(data.DB_MSG);
 })
 
-const render = (messages) => {
+socket.on('update-products', data => {
+    renderProd(product);
+})
+
+/* ----------------------------- RENDERS ----------------------------*/
+
+const renderChat = (messages) => {
     const allMessages = messages.map((msg) => {
         return `
         <span>
@@ -17,6 +26,20 @@ const render = (messages) => {
     document.querySelector('#messagesRecord').innerHTML = allMessages;
 }
 
+const renderProd = (messages) => {
+    const allMessages = messages.map((msg) => {
+        return `
+        <span>
+            <b style="color:blue;">${msg.author}</b>
+            <small style="color:crimson;"> [${msg.date}] </small> <b style="color:blue;">:</b>
+            <i style="color:green;"> ${msg.message} </i>
+        </span>
+        ` }).join('<br>');
+
+    document.querySelector('#messagesRecord').innerHTML = allMessages;
+}
+
+/* ---------------------------- FUNCIONES ---------------------------*/
 function sendMessage() {
     const inputUser = document.getElementById('#user');
     const inputMessage = document.getElementById('#messageContent');
@@ -29,4 +52,8 @@ function sendMessage() {
     }
 
     socket.emit('from-client-messages', msj)
+}
+
+function addProduct() {
+    
 }
