@@ -2,14 +2,17 @@
 const express = require('express');
 const router = express.Router();
 const Contenedor = require('../fileSystem.js');
+const path = require('path');
 
 /* ------------------------- BASE DE DATOS --------------------------*/
-const cont = new Contenedor('./src/productos.txt');
+const cont = new Contenedor('./public/productos.txt');
 
 /* ------------------------------ RUTAS -----------------------------*/
 router.get('/', async (req, res)=>{
     const products = await cont.getAll();
-    res.render('layouts/home',{products});
+    console.log(path.join(__dirname, '../../views/partials', '/prod_table.hbs'));
+    res.sendFile(path.join(__dirname, '../../views/partials', '/prod_table.hbs'), {products})
+    // res.render('partials/prod_table',{products});
     res.status(200);
 });
 
