@@ -1,29 +1,16 @@
 /* ---------------------------- MODULOS -----------------------------*/
 const express = require('express');
 const router = express.Router();
-const ProdContenedor = require('../prodsystem.js');
-const MessagesContenedor = require('../msgsystem.js');
-
-/* ------------------------- BASE DE DATOS --------------------------*/
-const prods = new ProdContenedor('./public/productos.txt');
-const msgs = new MessagesContenedor('./public/messages.txt');
+const path = require('path');
 
 /* ------------------------------ RUTAS -----------------------------*/
-router.get('/', async (req, res)=>{
-    const products = await prods.getAll();
-    const messages = await msgs.getAll();
-
-    res.render('layouts/home', { products, messages });
+router.get('/', (req, res)=>{
+    res.sendFile(path.join(__dirname, '../../public', 'index.html'));
     res.status(200);
 });
 
-router.post('/productos', async (req, res)=>{
-    const newID = await prods.save(req.body);
-    const newProduct = {...req.body, id:newID}
-
-    console.log('Agregado!', newProduct)
-    res.redirect('/')
-    res.status(201);
+router.get('*', async (req, res) => {
+    res.status(404).send('404 - Page not found!!');
 });
 
 module.exports = router;

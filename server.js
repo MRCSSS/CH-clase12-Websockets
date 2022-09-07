@@ -13,10 +13,6 @@ const httpServer = new HttpServer(app);
 const io = new IOServer(httpServer);
 const router = require('./src/routes/all.routes.js');
  
-/* ---------------------- MOTOR DE PLANTILLAS -----------------------*/
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
-
 /* -------------------------- MIDDLEWARES ---------------------------*/
 app.use(express.static('public'));
 app.use(express.json());
@@ -32,17 +28,25 @@ const msgs = new MessagesContenedor('./public/messages.txt');
 
 /* ---------------------------- WEBSOCKET ---------------------------*/
 io.on('connection', async (socket) => {
-    const DB_PROD = await prods.getAll();
-    const DB_MSG = await msgs.getAll();
-
     console.log(`Client conected: ${socket.id}`);
-    
-    io.sockets.emit('from-server-msg', {DB_MSG} );
 
-    socket.on('from-client-msg', msg => {
+    const DB_MSG = await msgs.getAll();
+    const DB_PROD = await prods.getAll();
+    
+    socket.emit('from-server-msg', {DB_MSG} );
+    socket.emit('from-server-prodUpdate', {DB_PROD} );
+
+    socket.on('from-client-msg', async (msg) => {
+        await msgs.save(msg);
         DB_MSG.push(msg);
-        // console.log('DB_MSG', DB_MSG)
-        io.sockets.emit('from-server-messages', {DB_MSG});
+        io.sockets.emit('from-server-msg', {DB_MSG});
+    })
+    socket.on('from-client-prodUpdate', async (prod) => {
+        const newID = await prods.save(prod);
+        const newProduct = {...prod, id:newID}
+
+        DB_PROD.push(newProduct);
+        io.sockets.emit('from-server-prodUpdate', {DB_PROD});
     })
 })
 
@@ -52,7 +56,6 @@ const server = httpServer.listen(PORT, () => {
     console.log(`Servidor escuchando en puerto http://localhost:${PORT}`);
 })
 
-server.on('error', err => {
-    console.log(`Server error: ${err}`);
-})
-
+// server.on('error', err => {
+//     console.log(`Server error: ${err}`);
+// })
